@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inf Marketing Popup Component</title>
+</head>
+
+<body>
+
+
+    <script>
+        function init(test = false) {
+            // 檢查是否已經初始化過，如果是則先清除
+            const existingScript = document.querySelector('script[src="./inf-marketing-popup-component.js"]');
+            if (existingScript) {
+                existingScript.remove();
+            }
+            
+            // 清除已存在的彈窗組件
+            const existingPopups = document.querySelectorAll('inf-marketing-popup-component');
+            existingPopups.forEach(popup => popup.remove());
+            
+            const script = document.createElement('script');
+            script.src = './inf-marketing-popup-component.js';
+            script.sync = true;
+            script.onload = () => {
+                window.createInfMarketingPopupByBrand('ALMI', {test: test});
+            };
+            document.body.appendChild(script);
+        }
+
+        // 如果 DOM 還在 loading，就等事件；否則直接執行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+    
+    <!-- 提供給使用者複製的 Script 代碼 -->
+    <div style="position: fixed; top: 10px; left: 10px; background: #f5f5f5; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 400px; z-index: 9999; border: 1px solid #ddd;">
+        <div style="display: flex; justify-content: space-between; align-items: center;margin-bottom: 10px;">
+        <h4 style="margin: 0;padding: 0;">複製以下代碼到您的網站：</h4>
+        <button onclick="copyToClipboard(this.previousElementSibling.textContent)" style="padding: 5px 10px; background: #007cba; color: white; border: none; border-radius: 3px; cursor: pointer;">複製代碼</button>
+        </div>
+        <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word; background: #fff; padding: 10px; border-radius: 3px; border: 1px solid #ccc; font-size: 11px;"><code>&lt;script&gt;
+function init() {
+    // 檢查是否已經初始化過，如果是則先清除
+    const existingScript = document.querySelector('script[src="./inf-marketing-popup-component.js"]');
+    if (existingScript) {
+        existingScript.remove();
+    }
+    
+    // 清除已存在的彈窗組件
+    const existingPopups = document.querySelectorAll('inf-marketing-popup-component');
+    existingPopups.forEach(popup => popup.remove());
+    
+    const script = document.createElement('script');
+    script.src = './inf-marketing-popup-component.js';
+    script.sync = true;
+    script.onload = () => {
+        window.createInfMarketingPopupByBrand('ALMI');
+    };
+    document.body.appendChild(script);
+}
+
+// 如果 DOM 還在 loading，就等事件；否則直接執行
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+&lt;/script&gt;</code></pre>
+        <button onclick="init()" style="margin-top: 10px; padding: 10px; background: #1e1e19; color: #f5f5f5; border: 1px solid #1e1e19; border-radius: 3px; cursor: pointer; display: block; width: 100%;">ALMI 測試（後台設定）</button>
+        <button onclick="init(true)" style="margin-top: 10px; padding: 10px; background: white; color: #1e1e19; border: 1px solid #1e1e19; border-radius: 3px; cursor: pointer; display: block; width: 100%;">ALMI 測試（假資料測試折扣動畫）</button>
+    </div>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('代碼已複製到剪貼簿！');
+            }).catch(err => {
+                console.error('複製失敗:', err);
+                // 備用複製方法
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('代碼已複製到剪貼簿！');
+            });
+        }
+    </script>
+</body>
+
+</html>
