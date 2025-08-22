@@ -625,6 +625,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         container.style.cssText = baseStyles;
 
         const discountCode = this.getAttribute('discount-code') || "bra200";
+        const discountTitle = this.getAttribute('discount-title') || "女裝限時優惠"; // 動態設定 Title
         const discountDescription = this.getAttribute('discount-description') || "運動內衣一件折<span style='font-weight:bold;color:#EB7454'>$200</span>(優惠可累計,買越多省越多)";
         const ctaBackground = this.getAttribute('cta-background') || '#EB7454FF';
         const ctaColor = this.getAttribute('cta-color') || '#FFFFFFFF';
@@ -646,7 +647,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             <div id="infFITS_discount_wrapper" style="background:rgba(255,255,255,1);border-radius:10px;padding: 12px;box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 8px;">
                 <div class="wrapper-flex">
                     <div class="inf_sf-container" style="justify-content: space-between; display: block; margin-left:8px;width:100%">
-                        <div class="inf_sf-maintext" style="font-weight: 700;margin-bottom: 4px;overflow: hidden;text-overflow: ellipsis">女裝限時優惠</div>
+                        <div class="inf_sf-maintext" style="font-weight: 700;margin-bottom: 4px;overflow: hidden;text-overflow: ellipsis">${discountTitle}</div>
                         <div class="inf_sf-maintext">${discountDescription}</div>
                         <div class="discount-code-container">
                             <div class="discount-code">${discountCode}</div>
@@ -1008,12 +1009,6 @@ class InfMarketingPopupComponent extends HTMLElement {
                 // 隨機選擇一個商品
                 const randomIndex = Math.floor(Math.random() * jsonData_trans.length);
                 const selectedProduct = jsonData_trans[randomIndex];
-                
-                // 如果是測試模式，為動畫迷你欄加上 sale_price
-                if (this.getAttribute('data-test-mode') === 'true') {
-                    selectedProduct.sale_price = '100';
-                }
-                
                 // 更新彈窗顯示
                 this.updateMinibarAnimDisplay(selectedProduct);
                 return selectedProduct; // 回傳商品資料
@@ -1057,7 +1052,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             const ctaColor = this.getAttribute('minibar-cta-color') || '#EB7454';
             
             // 替換 %NUM% 為實際的 record_cnt 並設定顏色
-            const displayText = description.replace('%NUM%', `<span style="color:${ctaColor};font-weight:600">${productData.record_cnt}</span>`);
+            const displayText = description.replace('%NUM%', `<span style="color:${ctaColor};font-weight:600"> ${productData.record_cnt} </span>`);
             secondMainText.innerHTML = displayText;
         }
 
@@ -1108,7 +1103,10 @@ class InfMarketingPopupComponent extends HTMLElement {
 
         // 獲取配置的顏色
         const ctaColor = this.getAttribute('minibar-anim-cta-color') || '#EB7454';
-        
+        // 如果是測試模式，為動畫迷你欄加上 sale_price
+        if (this.getAttribute('data-test-mode') === 'true') {
+            productData.sale_price = '100';
+        }
         // 更新價格顯示（對應 updateBanner 中的價格處理）
         if (productData.sale_price && productData.sale_price !== "") {
             if (salePriceElement) {
@@ -1118,9 +1116,9 @@ class InfMarketingPopupComponent extends HTMLElement {
             }
             
             // 延遲更新價格動畫（對應 updateBanner 中的 setTimeout）
-            setTimeout(() => {
+            // setTimeout(() => {
                 this.updatePriceAnimation(productData.sale_price, productData.price, '3', ctaColor);
-            }, 3000);
+            // }, 3000);
         } else {
             if (salePriceElement) {
                 salePriceElement.style.display = 'none';
@@ -1151,7 +1149,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             const randomNum = Math.floor(Math.random() * 900) + 100;
             
             // 替換 %NUM% 為實際的隨機數字並設定顏色
-            const displayText = description.replace('%NUM%', `<span style="color:${ctaColor};font-weight:600">${randomNum}</span>`);
+            const displayText = description.replace('%NUM%', `<span style="color:${ctaColor};font-weight:600"> ${randomNum} </span>`);
             secondMainText.innerHTML = displayText;
         }
     }
@@ -1164,7 +1162,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         const discountPercent = parseInt(100 - parseInt(salePrice.replace(',', '')) * 100 / parseInt(originalPrice.replace(',', '')));
         
         wrapper.innerHTML = `
-            <span class="mini_price_sale" data-banner="${order}" style="color: ${ctaColor};">${discountPercent}% off<span style='color:black'>NT$ ${salePrice}</span></span>
+            <span class="mini_price_sale" data-banner="${order}"><span style="background: ${ctaColor};color:white;font-weight:400;padding: 0 4px;border-radius: 5px;opacity: 0.6;">${discountPercent}% off</span><span style="color: ${ctaColor};">NT$ ${salePrice}</span></span>
             <span class="mini_price" data-banner="${order}">NT$ ${originalPrice}</span>
         `;
 
@@ -1353,6 +1351,7 @@ window.createInfMarketingPopup = function(options = {}) {
         brand = 'VER',                // 品牌名稱
         type = 'discount',           // 彈窗類型：discount, minibar, minibar_anim
         discountCode = 'bra200',     // 折扣碼
+        discountTitle = '女裝限時優惠', // 折扣標題
         discountDescription = "運動內衣一件折<span style='font-weight:bold;color:#EB7454'>$200</span>(優惠可累計,買越多省越多)", // 折扣描述
         ctaBackground = '#EB7454FF', // CTA 按鈕背景色
         ctaColor = '#FFFFFFFF',      // CTA 按鈕文字色
@@ -1393,6 +1392,7 @@ window.createInfMarketingPopup = function(options = {}) {
     // 根據類型設置對應的屬性
     if (type === 'discount') {
         popupElement.setAttribute('discount-code', discountCode);
+        popupElement.setAttribute('discount-title', discountTitle); // 設置折扣標題
         popupElement.setAttribute('discount-description', discountDescription);
         popupElement.setAttribute('cta-background', ctaBackground);
         popupElement.setAttribute('cta-color', ctaColor);
@@ -1807,6 +1807,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     brand: brand,
                     type: 'discount',
                     discountCode: discountConfig.Code || 'bra200',
+                    discountTitle: discountConfig.Title || '女裝限時優惠', // 動態設定 Title
                     discountDescription: discountConfig.Description || "運動內衣一件折<span style='font-weight:bold;color:#EB7454'>$200</span>(優惠可累計,買越多省越多)",
                     ctaBackground: discountConfig.CTA_background || '#EB7454FF',
                     ctaColor: discountConfig.CTA_color || '#FFFFFFFF',

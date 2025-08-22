@@ -58,7 +58,7 @@ function init() {
     existingPopups.forEach(popup => popup.remove());
     
     const script = document.createElement('script');
-    script.src = './inf-marketing-popup-component.js';
+    script.src = 'https://ts-inf-marketing-popup-component.vercel.app/inf-marketing-popup-component.js';
     script.sync = true;
     script.onload = () => {
         window.createInfMarketingPopupByBrand('ALMI');
