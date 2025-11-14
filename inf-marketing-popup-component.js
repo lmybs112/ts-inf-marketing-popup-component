@@ -1623,88 +1623,88 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
         // 檢查是否使用測試模式
         if (options.test === true) {
             // 開發階段使用假資料測試
-            const configArray = [
-                {
-                    "Brand": "ALMI",
-                    "ConfigData": {
-                        "Section_Info": [
-                            {
-                                "Description": "可以使用優惠券一次",
-                                "CTA_background": "#EB7454FF",
-                                "Title": "女裝限時優惠",
-                                "CTA_text": "複製折扣碼",
-                                "Code": "bra200",
-                                "CTA_color": "#FFFFFFFF",
-                                "TodayDisplayMode": false,
-                                "DisplayList": [
-                                    "inffits_landing_page_cond",
-                                    "inffits_category_page_cond",
-                                    "inffits_product_page_cond"
-                                ],
-                                "TimeValid": "2025-08-22~2025-10-23",
-                                "Location": "RightDown",
-                                "status": true
-                            }
-                        ]
-                    },
-                    "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
-                    "Dashboard_Title": "彈跳優惠券版位",
-                    "Module": "Popup_Coupon_Widget",
-                    "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2m-11-4l2.03 2.71L16 11l4 5H8zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6z\"/></svg>"
-                },
-                {
-                    "Brand": "ALMI",
-                    "ConfigData": {
-                        "Section_Info": [
-                            {
-                                "CTA_color": "#000000",
-                                "Description": "近期超過%NUM%位顧客購買這款商品",
-                                "DisplayList": [
-                                    "inffits_landing_page_cond",
-                                    "inffits_category_page_cond",
-                                    "inffits_product_page_cond"
-                                ],
-                                "TimeValid": "2025-08-11~2025-10-12",
-                                "Title": "商品名稱",
-                                "Location": "RightDown",
-                                "status": true
-                            }
-                        ]
-                    },
-                    "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
-                    "Dashboard_Title": "彈跳促購資訊版位",
-                    "Module": "Popup_SocialProof_Info_Widget",
-                    "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 16H5V5h14zm-5.04-6.71l-2.75 3.54l-1.96-2.36L6.5 17h11z\"/></svg>"
-                },
-                {
-                    "Brand": "ALMI",
-                    "ConfigData": {
-                        "Section_Info": [
-                            {
-                                "CTA_color": "#CA0000FF",
-                                "sale_price_display": true,
-                                "Description": "熱銷優惠!!！有%NUM%人加入購物車!!!",
-                                "DisplayList": [
-                                    "inffits_landing_page_cond",
-                                    "inffits_category_page_cond",
-                                    "inffits_product_page_cond"
-                                ],
-                                "TimeValid": "2025-08-11~2025-10-18",
-                                "Title": "商品名稱",
-                                "Location": "RightDown",
-                                "status": true
-                            }
-                        ]
-                    },
-                    "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
-                    "Dashboard_Title": "彈跳商品推薦導購",
-                    "Module": "Popup_SocialProof_Recommend_Widget",
-                    "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M12 2C6.48 2 2 6.48 2 12c0 1.33.26 2.61.74 3.77L8 10.5l3.3 2.78L14.58 10H13V8h5v5h-2v-1.58L11.41 16l-3.29-2.79l-4.4 4.4A10 10 0 0 0 12 22h8c1.1 0 2-.9 2-2v-8c0-5.52-4.48-10-10-10m7.5 18.5c-.55 0-1-.45-1-1s.45-1 1-1s1 .45 1 1s-.45 1-1 1\"/></svg>"
-                }
-            ];
+            // const configArray = [
+            //     {
+            //         "Brand": "ALMI",
+            //         "ConfigData": {
+            //             "Section_Info": [
+            //                 {
+            //                     "Description": "可以使用優惠券一次",
+            //                     "CTA_background": "#EB7454FF",
+            //                     "Title": "女裝限時優惠",
+            //                     "CTA_text": "複製折扣碼",
+            //                     "Code": "bra200",
+            //                     "CTA_color": "#FFFFFFFF",
+            //                     "TodayDisplayMode": false,
+            //                     "DisplayList": [
+            //                         "inffits_landing_page_cond",
+            //                         "inffits_category_page_cond",
+            //                         "inffits_product_page_cond"
+            //                     ],
+            //                     "TimeValid": "2025-08-22~2025-10-23",
+            //                     "Location": "RightDown",
+            //                     "status": true
+            //                 }
+            //             ]
+            //         },
+            //         "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
+            //         "Dashboard_Title": "彈跳優惠券版位",
+            //         "Module": "Popup_Coupon_Widget",
+            //         "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2m-11-4l2.03 2.71L16 11l4 5H8zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6z\"/></svg>"
+            //     },
+            //     {
+            //         "Brand": "ALMI",
+            //         "ConfigData": {
+            //             "Section_Info": [
+            //                 {
+            //                     "CTA_color": "#000000",
+            //                     "Description": "近期超過%NUM%位顧客購買這款商品",
+            //                     "DisplayList": [
+            //                         "inffits_landing_page_cond",
+            //                         "inffits_category_page_cond",
+            //                         "inffits_product_page_cond"
+            //                     ],
+            //                     "TimeValid": "2025-08-11~2025-10-12",
+            //                     "Title": "商品名稱",
+            //                     "Location": "RightDown",
+            //                     "status": true
+            //                 }
+            //             ]
+            //         },
+            //         "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
+            //         "Dashboard_Title": "彈跳促購資訊版位",
+            //         "Module": "Popup_SocialProof_Info_Widget",
+            //         "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 16H5V5h14zm-5.04-6.71l-2.75 3.54l-1.96-2.36L6.5 17h11z\"/></svg>"
+            //     },
+            //     {
+            //         "Brand": "ALMI",
+            //         "ConfigData": {
+            //             "Section_Info": [
+            //                 {
+            //                     "CTA_color": "#CA0000FF",
+            //                     "sale_price_display": true,
+            //                     "Description": "熱銷優惠!!！有%NUM%人加入購物車!!!",
+            //                     "DisplayList": [
+            //                         "inffits_landing_page_cond",
+            //                         "inffits_category_page_cond",
+            //                         "inffits_product_page_cond"
+            //                     ],
+            //                     "TimeValid": "2025-08-11~2025-10-18",
+            //                     "Title": "商品名稱",
+            //                     "Location": "RightDown",
+            //                     "status": true
+            //                 }
+            //             ]
+            //         },
+            //         "Dashboard_Imgsrc_link": "https://icon-sets.iconify.design/ic/page-5.html",
+            //         "Dashboard_Title": "彈跳商品推薦導購",
+            //         "Module": "Popup_SocialProof_Recommend_Widget",
+            //         "Dashboard_Imgsrc": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M12 2C6.48 2 2 6.48 2 12c0 1.33.26 2.61.74 3.77L8 10.5l3.3 2.78L14.58 10H13V8h5v5h-2v-1.58L11.41 16l-3.29-2.79l-4.4 4.4A10 10 0 0 0 12 22h8c1.1 0 2-.9 2-2v-8c0-5.52-4.48-10-10-10m7.5 18.5c-.55 0-1-.45-1-1s.45-1 1-1s1 .45 1 1s-.45 1-1 1\"/></svg>"
+            //     }
+            // ];
             
-            console.log('使用開發測試資料:', configArray);
-            processConfigArray(configArray);
+            console.log('使用開發測試資料:', options.configArray);
+            processConfigArray(options.configArray);
         } else {
             // 調用 API 獲取品牌配置
             fetch('https://api.inffits.com/mkt_brand_config_proc/GetItems', {
