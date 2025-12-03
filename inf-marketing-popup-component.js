@@ -961,6 +961,40 @@ class InfMarketingPopupComponent extends HTMLElement {
                 // 更新彈窗顯示
                 this.updateMinibarDisplay(productData[0]);
                 return productData[0]; // 回傳商品資料
+            } else if (data['sp_trans'] && data['sp_trans'].length > 0) {
+                const productData = data['sp_trans'].map((item) => {
+                    item['recom_dat'] = {...item }
+                    let newItem = Object.assign({}, item['recom_dat']);
+                    newItem.sale_price = item['recom_dat'].sale_price
+                        ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
+                        : "";
+                    newItem.price = parseInt(
+                        item['recom_dat'].price.replace(/\D/g, "")
+                    ).toLocaleString();
+                    newItem.record_cnt = item.record_cnt
+                    return newItem;
+                });
+
+                // 更新彈窗顯示
+                this.updateMinibarDisplay(productData[0]);
+                return productData[0]; // 回傳商品資料
+            } else if (data['sp_atc'] && data['sp_atc'].length > 0) {
+                const productData = data['sp_atc'].map((item) => {
+                    item['recom_dat'] = {...item }
+                    let newItem = Object.assign({}, item['recom_dat']);
+                    newItem.sale_price = item['recom_dat'].sale_price
+                        ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
+                        : "";
+                    newItem.price = parseInt(
+                        item['recom_dat'].price.replace(/\D/g, "")
+                    ).toLocaleString();
+                    newItem.record_cnt = item.record_cnt
+                    return newItem;
+                });
+
+                // 更新彈窗顯示
+                this.updateMinibarDisplay(productData[0]);
+                return productData[0]; // 回傳商品資料
             } else {
                 throw new Error('沒有可用的商品資料');
             }
