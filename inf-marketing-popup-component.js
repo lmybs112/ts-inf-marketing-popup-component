@@ -958,9 +958,13 @@ class InfMarketingPopupComponent extends HTMLElement {
                     return newItem;
                 });
 
+                // 隨機選取其中一個商品（不固定第一格）
+                const randomIndex = Math.floor(Math.random() * productData.length);
+                const selectedProduct = productData[randomIndex];
+                
                 // 更新彈窗顯示
-                this.updateMinibarDisplay(productData[0]);
-                return productData[0]; // 回傳商品資料
+                this.updateMinibarDisplay(selectedProduct);
+                return selectedProduct; // 回傳商品資料
             } else if (data['sp_trans'] && data['sp_trans'].length > 0) {
                 const productData = data['sp_trans'].map((item) => {
                     item['recom_dat'] = {...item }
@@ -975,9 +979,13 @@ class InfMarketingPopupComponent extends HTMLElement {
                     return newItem;
                 });
 
+                // 隨機選取其中一個商品（不固定第一格）
+                const randomIndex = Math.floor(Math.random() * productData.length);
+                const selectedProduct = productData[randomIndex];
+                
                 // 更新彈窗顯示
-                this.updateMinibarDisplay(productData[0]);
-                return productData[0]; // 回傳商品資料
+                this.updateMinibarDisplay(selectedProduct);
+                return selectedProduct; // 回傳商品資料
             } else if (data['sp_atc'] && data['sp_atc'].length > 0) {
                 const productData = data['sp_atc'].map((item) => {
                     item['recom_dat'] = {...item }
@@ -992,9 +1000,13 @@ class InfMarketingPopupComponent extends HTMLElement {
                     return newItem;
                 });
 
+                // 隨機選取其中一個商品（不固定第一格）
+                const randomIndex = Math.floor(Math.random() * productData.length);
+                const selectedProduct = productData[randomIndex];
+                
                 // 更新彈窗顯示
-                this.updateMinibarDisplay(productData[0]);
-                return productData[0]; // 回傳商品資料
+                this.updateMinibarDisplay(selectedProduct);
+                return selectedProduct; // 回傳商品資料
             } else {
                 throw new Error('沒有可用的商品資料');
             }
