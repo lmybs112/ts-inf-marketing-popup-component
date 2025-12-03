@@ -5,6 +5,7 @@ class InfMarketingPopupComponent extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        // brand 將由 createInfMarketingPopup 直接設置，如果沒有設置則從 attribute 讀取（向後兼容）
         this.brand = this.getAttribute('brand') || 'VER';
         this.brandConfig = null; // 品牌配置
         this.popupType = null; // 將由外部設置
@@ -1375,9 +1376,12 @@ window.createInfMarketingPopup = function(options = {}) {
     // 創建組件元素
     const popupElement = document.createElement('inf-marketing-popup-component');
     
+    // 直接設置 brand 屬性（優先於 getAttribute）
+    popupElement.brand = brand;
+    
     // 先設置所有屬性，再添加到 DOM
     popupElement.setAttribute('type', type);
-    popupElement.setAttribute('brand', brand);
+    popupElement.setAttribute('brand', brand); // 保留 attribute 以向後兼容
     
     // 如果有測試模式，設置測試標記
     if (options.test === true) {
