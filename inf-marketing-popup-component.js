@@ -836,14 +836,13 @@ class InfMarketingPopupComponent extends HTMLElement {
     // 商品資訊初始化函數 (完全按照 ProductX_popup.js)
     idsInit() {
         var product_id;
-        var Brand = this.brand || 'VER';
+        var Brand = this.brand;
         var EC = 'SHOPLINE'; // 可以從配置中獲取
-        
+
         if (EC == 'SHOPLINE') {
             var data = document.documentElement.innerHTML;
-            // var item_id = data.split('"sku":"')[1].split('"')[0].split(':')[0];
-            // product_id = item_id;
-            product_id = '66388b9ab83a79001aeea2d1';
+            var item_id = data.split('"sku":"')[1].split('"')[0].split(':')[0];
+            product_id = item_id || '66388b9ab83a79001aeea2d1';
         }
         else if (EC == '91APP') {
             // var data = document.documentElement.innerHTML;
