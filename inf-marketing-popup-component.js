@@ -1816,31 +1816,173 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                 return isValid;
             }
             
+            // 判斷當前頁面類型的函數
+            function getCurrentPageType() {
+                const pathname = window.location.pathname.toLowerCase();
+                const url = window.location.href.toLowerCase();
+                
+                // 檢查是否為商品頁（常見的商品頁標識）
+                // 可以根據實際網站結構調整判斷邏輯
+                const productPageIndicators = [
+                    '/product/',
+                    '/products/',
+                    '/item/',
+                    '/p/',
+                    '/goods/',
+                    'product-detail',
+                    'product_detail',
+                    'product.html',
+                    'item.html'
+                ];
+                
+                // 檢查是否為分類頁
+                const categoryPageIndicators = [
+                    '/category/',
+                    '/categories/',
+                    '/c/',
+                    '/collection/',
+                    '/collections/',
+                    '/shop/',
+                    'category.html',
+                    'collection.html'
+                ];
+                
+                // 檢查是否為首頁
+                const isHomePage = pathname === '/' || 
+                                  pathname === '/index.html' || 
+                                  pathname === '/index' ||
+                                  pathname === '/home' ||
+                                  pathname === '/home.html';
+                
+                // 檢查是否為商品頁
+                const isProductPage = productPageIndicators.some(indicator => 
+                    pathname.includes(indicator) || url.includes(indicator)
+                ) || 
+                // 檢查是否有商品相關的 meta tag 或 class
+                !!document.querySelector('meta[property="og:type"][content="product"]') ||
+                !!document.querySelector('.product-detail') ||
+                !!document.querySelector('[data-product-id]');
+                
+                // 檢查是否為分類頁
+                const isCategoryPage = categoryPageIndicators.some(indicator => 
+                    pathname.includes(indicator) || url.includes(indicator)
+                ) ||
+                !!document.querySelector('.category-page') ||
+                !!document.querySelector('[data-category-id]');
+                
+                if (isProductPage) {
+                    return 'product';
+                } else if (isCategoryPage) {
+                    return 'category';
+                } else if (isHomePage) {
+                    return 'landing';
+                }
+                
+                // 預設返回 landing（如果無法判斷，預設允許顯示）
+                return 'landing';
+            }
+            
+            // 檢查 DisplayList 是否允許在當前頁面顯示
+            function isDisplayListAllowed(displayList) {
+                // 如果沒有 DisplayList 或為空陣列，預設允許顯示
+                if (!displayList || !Array.isArray(displayList) || displayList.length === 0) {
+                    return true;
+                }
+                
+                const currentPageType = getCurrentPageType();
+                const currentUrl = window.location.href.toLowerCase();
+                const currentHostname = window.location.hostname.toLowerCase();
+                const currentPathname = window.location.pathname.toLowerCase();
+                
+                // 將 DisplayList 條件映射到頁面類型
+                const conditionMap = {
+                    'inffits_landing_page_cond': 'landing',
+                    'inffits_category_page_cond': 'category',
+                    'inffits_product_page_cond': 'product'
+                };
+                
+                // 檢查 DisplayList 中是否有符合當前頁面類型的條件或 URL
+                const isAllowed = displayList.some(condition => {
+                    // 先檢查是否為條件標識符
+                    const pageType = conditionMap[condition];
+                    if (pageType) {
+                        return pageType === currentPageType;
+                    }
+                    
+                    // 如果不是條件標識符，則視為 URL 進行匹配
+                    // 標準化 URL（移除協議、路徑等，只保留域名部分）
+                    const normalizedCondition = condition.toLowerCase()
+                        .replace(/^https?:\/\//, '')  // 移除 http:// 或 https://
+                        .replace(/^www\./, '')         // 移除 www.
+                        .split('/')[0]                 // 只取域名部分
+                        .split('?')[0];                // 移除查詢參數
+                    
+                    // 標準化當前主機名
+                    const normalizedHostname = currentHostname.replace(/^www\./, '');
+                    
+                    // 檢查是否為完整 URL 匹配（包含路徑）
+                    if (condition.toLowerCase().includes('/') || condition.toLowerCase().includes('?')) {
+                        // 如果條件包含路徑，則檢查完整 URL 是否包含該條件
+                        return currentUrl.includes(condition.toLowerCase());
+                    }
+                    
+                    // 檢查域名是否匹配
+                    if (normalizedCondition === normalizedHostname || 
+                        normalizedHostname.includes(normalizedCondition) ||
+                        normalizedCondition.includes(normalizedHostname)) {
+                        return true;
+                    }
+                    
+                    // 檢查完整 URL 是否包含該條件
+                    if (currentUrl.includes(condition.toLowerCase())) {
+                        return true;
+                    }
+                    
+                    return false;
+                });
+                
+                console.log(`DisplayList 檢查: 當前頁面類型(${currentPageType}), 當前 URL(${currentUrl}), DisplayList(${JSON.stringify(displayList)}), 是否允許(${isAllowed})`);
+                
+                return isAllowed;
+            }
+            
             // 遍歷配置陣列，根據 Module 類型分配配置
             configArray.forEach(config => {
                 if (config.Module === 'Popup_Coupon_Widget' && config.ConfigData?.Section_Info?.[0]) {
                     const sectionInfo = config.ConfigData.Section_Info[0];
-                    if (sectionInfo.status && isDateInRange(sectionInfo.TimeValid)) {
+                    const isStatusValid = sectionInfo.status;
+                    const isTimeValid = isDateInRange(sectionInfo.TimeValid);
+                    const isDisplayListValid = isDisplayListAllowed(sectionInfo.DisplayList);
+                    
+                    if (isStatusValid && isTimeValid && isDisplayListValid) {
                         discountConfig = sectionInfo;
                         console.log('✓ 折扣彈窗配置有效');
                     } else {
-                        console.log('✗ 折扣彈窗配置無效 - status:', sectionInfo.status, 'TimeValid:', sectionInfo.TimeValid, '日期檢查結果:', isDateInRange(sectionInfo.TimeValid));
+                        console.log('✗ 折扣彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 } else if (config.Module === 'Popup_SocialProof_Info_Widget' && config.ConfigData?.Section_Info?.[0]) {
                     const sectionInfo = config.ConfigData.Section_Info[0];
-                    if (sectionInfo.status && isDateInRange(sectionInfo.TimeValid)) {
+                    const isStatusValid = sectionInfo.status;
+                    const isTimeValid = isDateInRange(sectionInfo.TimeValid);
+                    const isDisplayListValid = isDisplayListAllowed(sectionInfo.DisplayList);
+                    
+                    if (isStatusValid && isTimeValid && isDisplayListValid) {
                         minibarConfig = sectionInfo;
                         console.log('✓ 迷你欄彈窗配置有效');
                     } else {
-                        console.log('✗ 迷你欄彈窗配置無效 - status:', sectionInfo.status, 'TimeValid:', sectionInfo.TimeValid, '日期檢查結果:', isDateInRange(sectionInfo.TimeValid));
+                        console.log('✗ 迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 } else if (config.Module === 'Popup_SocialProof_Recommend_Widget' && config.ConfigData?.Section_Info?.[0]) {
                     const sectionInfo = config.ConfigData.Section_Info[0];
-                    if (sectionInfo.status && isDateInRange(sectionInfo.TimeValid)) {
+                    const isStatusValid = sectionInfo.status;
+                    const isTimeValid = isDateInRange(sectionInfo.TimeValid);
+                    const isDisplayListValid = isDisplayListAllowed(sectionInfo.DisplayList);
+                    
+                    if (isStatusValid && isTimeValid && isDisplayListValid) {
                         minibarAnimConfig = sectionInfo;
                         console.log('✓ 動畫迷你欄彈窗配置有效');
                     } else {
-                        console.log('✗ 動畫迷你欄彈窗配置無效 - status:', sectionInfo.status, 'TimeValid:', sectionInfo.TimeValid, '日期檢查結果:', isDateInRange(sectionInfo.TimeValid));
+                        console.log('✗ 動畫迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 }
             });
