@@ -1,6 +1,151 @@
 // inf-marketing-popup-component.js
 // Web Component 封裝 ProductX_popup.js 中的三種彈窗方式
 
+// localStorage 緩存管理類別
+// 使用條件判斷避免重複宣告
+if (typeof window.PopupCacheManager === 'undefined') {
+    window.PopupCacheManager = class PopupCacheManager {
+    constructor() {
+        this.CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 分鐘
+        this.MAX_CACHE_PER_TYPE = 5; // 每個類型最多保存 5 個結果
+    }
+
+    // 生成緩存 key
+    generateCacheKey(type, brand, productId) {
+        return `inf_popup_cache_${type}_${brand}_${productId}`;
+    }
+
+    // 獲取緩存數據
+    getCachedData(type, brand, productId) {
+        try {
+            const key = this.generateCacheKey(type, brand, productId);
+            const cached = localStorage.getItem(key);
+            
+            if (!cached) {
+                console.log(`[緩存] 未找到緩存: ${key}`);
+                return null;
+            }
+
+            const cacheData = JSON.parse(cached);
+            const now = Date.now();
+
+            // 檢查是否過期
+            if (now > cacheData.expiresAt) {
+                console.log(`[緩存] 緩存已過期: ${key}`);
+                localStorage.removeItem(key);
+                return null;
+            }
+
+            console.log(`[緩存] 使用緩存數據: ${key}，剩餘 ${Math.round((cacheData.expiresAt - now) / 1000)} 秒過期`);
+            return cacheData.data;
+        } catch (error) {
+            console.error('[緩存] 讀取緩存失敗:', error);
+            return null;
+        }
+    }
+
+    // 保存緩存數據
+    setCachedData(type, brand, productId, data) {
+        try {
+            const key = this.generateCacheKey(type, brand, productId);
+            const now = Date.now();
+            
+            const cacheData = {
+                timestamp: now,
+                expiresAt: now + this.CACHE_EXPIRY_MS,
+                data: data
+            };
+
+            localStorage.setItem(key, JSON.stringify(cacheData));
+            console.log(`[緩存] 保存緩存成功: ${key}，${data.length} 個商品，10 分鐘後過期`);
+
+            // 執行清理，確保不超過最大數量
+            this.cleanupOldCache(type, brand);
+        } catch (error) {
+            console.error('[緩存] 保存緩存失敗:', error);
+        }
+    }
+
+    // 清理過期和超量的緩存
+    cleanupOldCache(type, brand) {
+        try {
+            const prefix = `inf_popup_cache_${type}_${brand}_`;
+            const cacheKeys = [];
+            const now = Date.now();
+
+            // 遍歷 localStorage 找出所有相關的緩存 key
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(prefix)) {
+                    try {
+                        const cached = localStorage.getItem(key);
+                        const cacheData = JSON.parse(cached);
+
+                        // 檢查是否過期
+                        if (now > cacheData.expiresAt) {
+                            console.log(`[緩存清理] 刪除過期緩存: ${key}`);
+                            localStorage.removeItem(key);
+                        } else {
+                            cacheKeys.push({
+                                key: key,
+                                timestamp: cacheData.timestamp
+                            });
+                        }
+                    } catch (error) {
+                        // 解析失敗，刪除該緩存
+                        console.log(`[緩存清理] 刪除無效緩存: ${key}`);
+                        localStorage.removeItem(key);
+                    }
+                }
+            }
+
+            // 如果超過最大數量，按照 FIFO 原則刪除最舊的
+            if (cacheKeys.length > this.MAX_CACHE_PER_TYPE) {
+                // 按時間戳排序（最舊的在前）
+                cacheKeys.sort((a, b) => a.timestamp - b.timestamp);
+
+                // 刪除超過限制的舊緩存
+                const toRemove = cacheKeys.length - this.MAX_CACHE_PER_TYPE;
+                for (let i = 0; i < toRemove; i++) {
+                    console.log(`[緩存清理] 刪除超量緩存 (FIFO): ${cacheKeys[i].key}`);
+                    localStorage.removeItem(cacheKeys[i].key);
+                }
+            }
+
+            console.log(`[緩存清理] 完成，當前 ${type}_${brand} 有 ${Math.min(cacheKeys.length, this.MAX_CACHE_PER_TYPE)} 個緩存`);
+        } catch (error) {
+            console.error('[緩存清理] 清理失敗:', error);
+        }
+    }
+
+    // 清除所有緩存（可選，用於調試）
+    clearAllCache() {
+        try {
+            const prefix = 'inf_popup_cache_';
+            const keysToRemove = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(prefix)) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            console.log(`[緩存] 清除所有緩存，共 ${keysToRemove.length} 個`);
+        } catch (error) {
+            console.error('[緩存] 清除所有緩存失敗:', error);
+        }
+    }
+    };
+}
+// 為了向後兼容，也將類別賦值給全局變量（如果尚未定義）
+if (typeof PopupCacheManager === 'undefined') {
+    var PopupCacheManager = window.PopupCacheManager;
+}
+
+// 使用條件判斷避免重複宣告 InfMarketingPopupComponent
+if (typeof customElements.get('inf-marketing-popup-component') === 'undefined') {
 class InfMarketingPopupComponent extends HTMLElement {
     constructor() {
         super();
@@ -9,6 +154,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         this.brand = this.getAttribute('brand') || 'VER';
         this.brandConfig = null; // 品牌配置
         this.popupType = null; // 將由外部設置
+        this.cacheManager = new window.PopupCacheManager(); // 初始化緩存管理器
     }
 
     // 初始化組件
@@ -840,9 +986,20 @@ class InfMarketingPopupComponent extends HTMLElement {
         var EC = 'SHOPLINE'; // 可以從配置中獲取
 
         if (EC == 'SHOPLINE') {
-            var data = document.documentElement.innerHTML;
-            var item_id = data.split('"sku":"')[1].split('"')[0].split(':')[0];
-            product_id = item_id || '66388b9ab83a79001aeea2d1';
+            try {
+                var data = document.documentElement.innerHTML;
+                var skuParts = data.split('"sku":"');
+                if (skuParts.length > 1) {
+                    var item_id = skuParts[1].split('"')[0].split(':')[0];
+                    product_id = item_id;
+                } else {
+                    console.log('[idsInit] 未找到 sku 數據，使用預設 product_id');
+                    product_id = '66388b9ab83a79001aeea2d1';
+                }
+            } catch (error) {
+                console.error('[idsInit] 解析 sku 失敗:', error);
+                product_id = '66388b9ab83a79001aeea2d1';
+            }
         }
         else if (EC == '91APP') {
             // var data = document.documentElement.innerHTML;
@@ -850,18 +1007,25 @@ class InfMarketingPopupComponent extends HTMLElement {
             // product_id = item_id;
         }
         else if (EC == 'PME') {
+            var skuContent;
             var metaTag = document.querySelector('meta[property="og:sku"]');
             if (metaTag) {
-                var skuContent = metaTag.getAttribute('content').split('-')[0];
+                skuContent = metaTag.getAttribute('content').split('-')[0];
                 console.log(skuContent); // 輸出 "FRP99153"
             }
             else if (document.querySelector('.prodnoBox') !== null) {
-                var skuContent = document.querySelector('.prodnoBox').innerText.split(':')[1].split('-')[0]
+                skuContent = document.querySelector('.prodnoBox').innerText.split(':')[1].split('-')[0]
             }
             else {
                 console.log('Meta tag not found');
             }
-            product_id = skuContent
+            product_id = skuContent || '66388b9ab83a79001aeea2d1';
+        }
+
+        // 確保 product_id 有預設值
+        if (!product_id) {
+            product_id = '66388b9ab83a79001aeea2d1';
+            console.log('[idsInit] 使用預設 product_id:', product_id);
         }
 
         var makeid = function (length) {
@@ -918,9 +1082,75 @@ class InfMarketingPopupComponent extends HTMLElement {
         return { "member_id": member_id, "lgiven_id": lgiven_id, "product_id": product_id }
     }
 
+    // 從商品陣列中隨機選取一個商品
+    selectRandomProduct(productArray, type = 'minibar') {
+        if (!productArray || productArray.length === 0) {
+            console.error('[隨機選取] 商品陣列為空');
+            return null;
+        }
+
+        const randomIndex = Math.floor(Math.random() * productArray.length);
+        const selectedProduct = productArray[randomIndex];
+        
+        console.log(`[隨機選取] 從 ${productArray.length} 個商品中選取第 ${randomIndex + 1} 個`);
+        return selectedProduct;
+    }
+
+    // 處理 minibar 商品數據（格式化價格等）
+    processMinibarProduct(item) {
+        let newItem = Object.assign({}, item['recom_dat']);
+        newItem.sale_price = item['recom_dat'].sale_price
+            ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
+            : "";
+        newItem.price = parseInt(
+            item['recom_dat'].price.replace(/\D/g, "")
+        ).toLocaleString();
+        newItem.record_cnt = item.record_cnt;
+        return newItem;
+    }
+
+    // 處理 minibar sp_trans/sp_atc 商品數據
+    processMinibarSpProduct(item) {
+        item['recom_dat'] = {...item };
+        let newItem = Object.assign({}, item['recom_dat']);
+        newItem.sale_price = item['recom_dat'].sale_price
+            ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
+            : "";
+        newItem.price = parseInt(
+            item['recom_dat'].price.replace(/\D/g, "")
+        ).toLocaleString();
+        newItem.record_cnt = item.record_cnt;
+        return newItem;
+    }
+
+    // 處理 minibar_anim 商品數據
+    processMinibarAnimProduct(item) {
+        let newItem = Object.assign({}, item);
+        newItem.sale_price = item.sale_price
+            ? parseInt(item.sale_price.replace(/\D/g, "")).toLocaleString()
+            : "";
+        newItem.price = parseInt(
+            item.price.replace(/\D/g, "")
+        ).toLocaleString();
+        return newItem;
+    }
+
     // 載入迷你欄商品資料
     async loadMinibarProductData() {
         const ids = this.idsInit();
+        
+        // 1. 先檢查緩存
+        const cachedData = this.cacheManager.getCachedData('minibar', this.brand, ids.product_id);
+        if (cachedData && cachedData.length > 0) {
+            // 從緩存中隨機選取一個商品
+            const selectedProduct = this.selectRandomProduct(cachedData, 'minibar');
+            if (selectedProduct) {
+                console.log('[Minibar] 使用緩存數據');
+                return selectedProduct;
+            }
+        }
+
+        // 2. 如果沒有緩存，調用 API
         const requestData = {
             Brand: this.brand,
             LGVID: ids.lgiven_id,
@@ -930,7 +1160,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             SP_PID: "xx",
             SELFSP_PID: ids.product_id
         };
-        console.log('迷你欄商品資料請求:', requestData);
+        console.log('[Minibar] 迷你欄商品資料請求:', requestData);
 
         try {
             const options = {
@@ -941,76 +1171,34 @@ class InfMarketingPopupComponent extends HTMLElement {
 
             const response = await fetch('https://eclm50mys1.execute-api.ap-northeast-1.amazonaws.com/v0/extension/recom_product', options);
             const data = await response.json();
-            console.log('迷你欄商品資料回應:', data);
+            console.log('[Minibar] 迷你欄商品資料回應:', data);
+
+            let productDataArray = null;
 
             // 處理 selfsp_trans 數據
             if (data['selfsp_trans'] && data['selfsp_trans'].length > 0) {
-                const productData = data['selfsp_trans'].map((item) => {
-                    let newItem = Object.assign({}, item['recom_dat']);
-                    newItem.sale_price = item['recom_dat'].sale_price
-                        ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
-                        : "";
-                    newItem.price = parseInt(
-                        item['recom_dat'].price.replace(/\D/g, "")
-                    ).toLocaleString();
-                    newItem.record_cnt = item.record_cnt
-                    return newItem;
-                });
-
-                // 隨機選取其中一個商品（不固定第一格）
-                const randomIndex = Math.floor(Math.random() * productData.length);
-                const selectedProduct = productData[randomIndex];
-                
-                // 更新彈窗顯示
-                this.updateMinibarDisplay(selectedProduct);
-                return selectedProduct; // 回傳商品資料
+                productDataArray = data['selfsp_trans'].map((item) => this.processMinibarProduct(item));
             } else if (data['sp_trans'] && data['sp_trans'].length > 0) {
-                const productData = data['sp_trans'].map((item) => {
-                    item['recom_dat'] = {...item }
-                    let newItem = Object.assign({}, item['recom_dat']);
-                    newItem.sale_price = item['recom_dat'].sale_price
-                        ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
-                        : "";
-                    newItem.price = parseInt(
-                        item['recom_dat'].price.replace(/\D/g, "")
-                    ).toLocaleString();
-                    newItem.record_cnt = item.record_cnt
-                    return newItem;
-                });
-
-                // 隨機選取其中一個商品（不固定第一格）
-                const randomIndex = Math.floor(Math.random() * productData.length);
-                const selectedProduct = productData[randomIndex];
-                
-                // 更新彈窗顯示
-                this.updateMinibarDisplay(selectedProduct);
-                return selectedProduct; // 回傳商品資料
+                productDataArray = data['sp_trans'].map((item) => this.processMinibarSpProduct(item));
             } else if (data['sp_atc'] && data['sp_atc'].length > 0) {
-                const productData = data['sp_atc'].map((item) => {
-                    item['recom_dat'] = {...item }
-                    let newItem = Object.assign({}, item['recom_dat']);
-                    newItem.sale_price = item['recom_dat'].sale_price
-                        ? parseInt(item['recom_dat'].sale_price.replace(/\D/g, "")).toLocaleString()
-                        : "";
-                    newItem.price = parseInt(
-                        item['recom_dat'].price.replace(/\D/g, "")
-                    ).toLocaleString();
-                    newItem.record_cnt = item.record_cnt
-                    return newItem;
-                });
-
-                // 隨機選取其中一個商品（不固定第一格）
-                const randomIndex = Math.floor(Math.random() * productData.length);
-                const selectedProduct = productData[randomIndex];
-                
-                // 更新彈窗顯示
-                this.updateMinibarDisplay(selectedProduct);
-                return selectedProduct; // 回傳商品資料
+                productDataArray = data['sp_atc'].map((item) => this.processMinibarSpProduct(item));
             } else {
                 throw new Error('沒有可用的商品資料');
             }
+
+            // 3. 保存完整的陣列到緩存
+            if (productDataArray && productDataArray.length > 0) {
+                this.cacheManager.setCachedData('minibar', this.brand, ids.product_id, productDataArray);
+                
+                // 4. 從新數據中隨機選取一個商品並返回
+                const selectedProduct = this.selectRandomProduct(productDataArray, 'minibar');
+                console.log('[Minibar] API 數據已緩存並選取商品');
+                return selectedProduct;
+            } else {
+                throw new Error('處理後沒有可用的商品資料');
+            }
         } catch (error) {
-            console.error('載入迷你欄商品資料失敗:', error);
+            console.error('[Minibar] 載入迷你欄商品資料失敗:', error);
             throw error; // 重新拋出錯誤
         }
     }
@@ -1018,6 +1206,19 @@ class InfMarketingPopupComponent extends HTMLElement {
     // 載入動畫迷你欄商品資料
     async loadMinibarAnimProductData() {
         const ids = this.idsInit();
+        
+        // 1. 先檢查緩存
+        const cachedData = this.cacheManager.getCachedData('minibar_anim', this.brand, ids.product_id);
+        if (cachedData && cachedData.length > 0) {
+            // 從緩存中隨機選取一個商品
+            const selectedProduct = this.selectRandomProduct(cachedData, 'minibar_anim');
+            if (selectedProduct) {
+                console.log('[MinibarAnim] 使用緩存數據');
+                return selectedProduct;
+            }
+        }
+
+        // 2. 如果沒有緩存，調用 API
         const requestData = {
             Brand: this.brand,
             LGVID: ids.lgiven_id,
@@ -1026,7 +1227,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             recom_num: "12",
             SP_PID: "xx"
         };
-        console.log('動畫迷你欄商品資料請求:', requestData);
+        console.log('[MinibarAnim] 動畫迷你欄商品資料請求:', requestData);
 
         try {
             const options = {
@@ -1037,32 +1238,24 @@ class InfMarketingPopupComponent extends HTMLElement {
 
             const response = await fetch('https://eclm50mys1.execute-api.ap-northeast-1.amazonaws.com/v0/extension/recom_product', options);
             const data = await response.json();
-            console.log('動畫迷你欄商品資料回應:', data);
+            console.log('[MinibarAnim] 動畫迷你欄商品資料回應:', data);
 
             // 處理 sp_trans 數據
-            let jsonData_trans = data['sp_trans'].map((item) => {
-                let newItem = Object.assign({}, item);
-                newItem.sale_price = item.sale_price
-                    ? parseInt(item.sale_price.replace(/\D/g, "")).toLocaleString()
-                    : "";
-                newItem.price = parseInt(
-                    item.price.replace(/\D/g, "")
-                ).toLocaleString();
-                return newItem;
-            });
+            let jsonData_trans = data['sp_trans'].map((item) => this.processMinibarAnimProduct(item));
 
             if (jsonData_trans.length > 0) {
-                // 隨機選擇一個商品
-                const randomIndex = Math.floor(Math.random() * jsonData_trans.length);
-                const selectedProduct = jsonData_trans[randomIndex];
-                // 更新彈窗顯示
-                this.updateMinibarAnimDisplay(selectedProduct);
-                return selectedProduct; // 回傳商品資料
+                // 3. 保存完整的陣列到緩存
+                this.cacheManager.setCachedData('minibar_anim', this.brand, ids.product_id, jsonData_trans);
+                
+                // 4. 從新數據中隨機選取一個商品並返回
+                const selectedProduct = this.selectRandomProduct(jsonData_trans, 'minibar_anim');
+                console.log('[MinibarAnim] API 數據已緩存並選取商品');
+                return selectedProduct;
             } else {
                 throw new Error('沒有可用的商品資料');
             }
         } catch (error) {
-            console.error('載入動畫迷你欄商品資料失敗:', error);
+            console.error('[MinibarAnim] 載入動畫迷你欄商品資料失敗:', error);
             throw error; // 重新拋出錯誤
         }
     }
@@ -1385,11 +1578,14 @@ class InfMarketingPopupComponent extends HTMLElement {
     }
 }
 
-// 註冊 Web Component
-customElements.define('inf-marketing-popup-component', InfMarketingPopupComponent);
+    // 註冊 Web Component
+    customElements.define('inf-marketing-popup-component', InfMarketingPopupComponent);
 
-// 導出組件類別供外部使用
-window.InfMarketingPopupComponent = InfMarketingPopupComponent;
+    // 導出組件類別供外部使用
+    window.InfMarketingPopupComponent = InfMarketingPopupComponent;
+} else {
+    console.log('[組件] inf-marketing-popup-component 已註冊，跳過重複註冊');
+}
 
 // 便捷的腳本創建方法
 window.createInfMarketingPopup = function(options = {}) {
@@ -2072,4 +2268,11 @@ window.createMinibarAnimPopup = function(options = {}) {
         type: 'minibar_anim',
         ...options
     });
+};
+
+// 清除所有彈窗緩存的工具方法（用於調試和測試）
+window.clearPopupCache = function() {
+    const cacheManager = new window.PopupCacheManager();
+    cacheManager.clearAllCache();
+    console.log('[工具] 已清除所有彈窗緩存');
 };
