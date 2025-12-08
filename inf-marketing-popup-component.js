@@ -22,7 +22,7 @@ if (typeof window.PopupCacheManager === 'undefined') {
             const cached = localStorage.getItem(key);
             
             if (!cached) {
-                console.log(`[緩存] 未找到緩存: ${key}`);
+                // console.log(`[緩存] 未找到緩存: ${key}`);
                 return null;
             }
 
@@ -31,15 +31,15 @@ if (typeof window.PopupCacheManager === 'undefined') {
 
             // 檢查是否過期
             if (now > cacheData.expiresAt) {
-                console.log(`[緩存] 緩存已過期: ${key}`);
+                // console.log(`[緩存] 緩存已過期: ${key}`);
                 localStorage.removeItem(key);
                 return null;
             }
 
-            console.log(`[緩存] 使用緩存數據: ${key}，剩餘 ${Math.round((cacheData.expiresAt - now) / 1000)} 秒過期`);
+            // console.log(`[緩存] 使用緩存數據: ${key}，剩餘 ${Math.round((cacheData.expiresAt - now) / 1000)} 秒過期`);
             return cacheData.data;
         } catch (error) {
-            console.error('[緩存] 讀取緩存失敗:', error);
+            // console.error('[緩存] 讀取緩存失敗:', error);
             return null;
         }
     }
@@ -57,12 +57,12 @@ if (typeof window.PopupCacheManager === 'undefined') {
             };
 
             localStorage.setItem(key, JSON.stringify(cacheData));
-            console.log(`[緩存] 保存緩存成功: ${key}，${data.length} 個商品，10 分鐘後過期`);
+            // console.log(`[緩存] 保存緩存成功: ${key}，${data.length} 個商品，10 分鐘後過期`);
 
             // 執行清理，確保不超過最大數量
             this.cleanupOldCache(type, brand);
         } catch (error) {
-            console.error('[緩存] 保存緩存失敗:', error);
+            // console.error('[緩存] 保存緩存失敗:', error);
         }
     }
 
@@ -83,7 +83,7 @@ if (typeof window.PopupCacheManager === 'undefined') {
 
                         // 檢查是否過期
                         if (now > cacheData.expiresAt) {
-                            console.log(`[緩存清理] 刪除過期緩存: ${key}`);
+                            // console.log(`[緩存清理] 刪除過期緩存: ${key}`);
                             localStorage.removeItem(key);
                         } else {
                             cacheKeys.push({
@@ -93,7 +93,7 @@ if (typeof window.PopupCacheManager === 'undefined') {
                         }
                     } catch (error) {
                         // 解析失敗，刪除該緩存
-                        console.log(`[緩存清理] 刪除無效緩存: ${key}`);
+                        // console.log(`[緩存清理] 刪除無效緩存: ${key}`);
                         localStorage.removeItem(key);
                     }
                 }
@@ -107,12 +107,12 @@ if (typeof window.PopupCacheManager === 'undefined') {
                 // 刪除超過限制的舊緩存
                 const toRemove = cacheKeys.length - this.MAX_CACHE_PER_TYPE;
                 for (let i = 0; i < toRemove; i++) {
-                    console.log(`[緩存清理] 刪除超量緩存 (FIFO): ${cacheKeys[i].key}`);
+                    // console.log(`[緩存清理] 刪除超量緩存 (FIFO): ${cacheKeys[i].key}`);
                     localStorage.removeItem(cacheKeys[i].key);
                 }
             }
 
-            console.log(`[緩存清理] 完成，當前 ${type}_${brand} 有 ${Math.min(cacheKeys.length, this.MAX_CACHE_PER_TYPE)} 個緩存`);
+            // console.log(`[緩存清理] 完成，當前 ${type}_${brand} 有 ${Math.min(cacheKeys.length, this.MAX_CACHE_PER_TYPE)} 個緩存`);
         } catch (error) {
             console.error('[緩存清理] 清理失敗:', error);
         }
@@ -132,7 +132,7 @@ if (typeof window.PopupCacheManager === 'undefined') {
             }
 
             keysToRemove.forEach(key => localStorage.removeItem(key));
-            console.log(`[緩存] 清除所有緩存，共 ${keysToRemove.length} 個`);
+            // console.log(`[緩存] 清除所有緩存，共 ${keysToRemove.length} 個`);
         } catch (error) {
             console.error('[緩存] 清除所有緩存失敗:', error);
         }
@@ -159,7 +159,7 @@ class InfMarketingPopupComponent extends HTMLElement {
 
     // 初始化組件
     init() {
-        console.log('初始化彈窗組件，類型:', this.popupType);
+        // console.log('初始化彈窗組件，類型:', this.popupType);
         
         this.render();
         this.setupStyles();
@@ -168,19 +168,19 @@ class InfMarketingPopupComponent extends HTMLElement {
         // 根據類型執行對應的彈窗邏輯
         switch(this.popupType) {
             case 'discount':
-                console.log('初始化折扣彈窗');
+                // console.log('初始化折扣彈窗');
                 this.initDiscountPopup();
                 break;
             case 'minibar':
-                console.log('初始化迷你欄彈窗');
+                // console.log('初始化迷你欄彈窗');
                 this.initMinibarPopup();
                 break;
             case 'minibar_anim':
-                console.log('初始化動畫迷你欄彈窗');
+                // console.log('初始化動畫迷你欄彈窗');
                 this.initMinibarAnimPopup();
                 break;
             default:
-                console.log('未知彈窗類型:', this.popupType);
+                // console.log('未知彈窗類型:', this.popupType);
         }
     }
 
@@ -692,7 +692,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             // 儲存到 localStorage
             localStorage.setItem(key, 'true');
             
-            console.log(`已設定今日(${today})不再顯示彈窗`);
+            // console.log(`已設定今日(${today})不再顯示彈窗`);
             
             // 觸發自定義事件
             this.dispatchEvent(new CustomEvent('popup-dont-show-today', {
@@ -709,7 +709,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             
             localStorage.removeItem(key);
             
-            console.log(`已取消今日(${today})不再顯示設定`);
+            // console.log(`已取消今日(${today})不再顯示設定`);
             
             // 觸發自定義事件
             this.dispatchEvent(new CustomEvent('popup-dont-show-today', {
@@ -993,7 +993,7 @@ class InfMarketingPopupComponent extends HTMLElement {
                     var item_id = skuParts[1].split('"')[0].split(':')[0];
                     product_id = item_id;
                 } else {
-                    console.log('[idsInit] 未找到 sku 數據，使用預設 product_id');
+                    // console.log('[idsInit] 未找到 sku 數據，使用預設 product_id');
                     product_id = '66388b9ab83a79001aeea2d1';
                 }
             } catch (error) {
@@ -1011,13 +1011,13 @@ class InfMarketingPopupComponent extends HTMLElement {
             var metaTag = document.querySelector('meta[property="og:sku"]');
             if (metaTag) {
                 skuContent = metaTag.getAttribute('content').split('-')[0];
-                console.log(skuContent); // 輸出 "FRP99153"
+                // console.log(skuContent); // 輸出 "FRP99153"
             }
             else if (document.querySelector('.prodnoBox') !== null) {
                 skuContent = document.querySelector('.prodnoBox').innerText.split(':')[1].split('-')[0]
             }
             else {
-                console.log('Meta tag not found');
+                // console.log('Meta tag not found');
             }
             product_id = skuContent || '66388b9ab83a79001aeea2d1';
         }
@@ -1025,7 +1025,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         // 確保 product_id 有預設值
         if (!product_id) {
             product_id = '66388b9ab83a79001aeea2d1';
-            console.log('[idsInit] 使用預設 product_id:', product_id);
+            // console.log('[idsInit] 使用預設 product_id:', product_id);
         }
 
         var makeid = function (length) {
@@ -1046,8 +1046,8 @@ class InfMarketingPopupComponent extends HTMLElement {
             for (let i = 0; i < dataLayer.length; i++) {
                 if (dataLayer[i].Action === "Product-Detail") {
                     // 找到了符合條件的項目，執行後續動作
-                    console.log('找到了符合 "gtm.load" 的事件，執行後續動作');
-                    console.log('FOUND!!')
+                    // console.log('找到了符合 "gtm.load" 的事件，執行後續動作');
+                    // console.log('FOUND!!')
                     if (dataLayer[i].Uid !== '') member_id = dataLayer[i].Uid
                     else member_id = ''
 
@@ -1092,7 +1092,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         const randomIndex = Math.floor(Math.random() * productArray.length);
         const selectedProduct = productArray[randomIndex];
         
-        console.log(`[隨機選取] 從 ${productArray.length} 個商品中選取第 ${randomIndex + 1} 個`);
+        // console.log(`[隨機選取] 從 ${productArray.length} 個商品中選取第 ${randomIndex + 1} 個`);
         return selectedProduct;
     }
 
@@ -1145,7 +1145,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             // 從緩存中隨機選取一個商品
             const selectedProduct = this.selectRandomProduct(cachedData, 'minibar');
             if (selectedProduct) {
-                console.log('[Minibar] 使用緩存數據');
+                // console.log('[Minibar] 使用緩存數據');
                 return selectedProduct;
             }
         }
@@ -1160,7 +1160,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             SP_PID: "xx",
             SELFSP_PID: ids.product_id
         };
-        console.log('[Minibar] 迷你欄商品資料請求:', requestData);
+        // console.log('[Minibar] 迷你欄商品資料請求:', requestData);
 
         try {
             const options = {
@@ -1171,7 +1171,7 @@ class InfMarketingPopupComponent extends HTMLElement {
 
             const response = await fetch('https://eclm50mys1.execute-api.ap-northeast-1.amazonaws.com/v0/extension/recom_product', options);
             const data = await response.json();
-            console.log('[Minibar] 迷你欄商品資料回應:', data);
+            // console.log('[Minibar] 迷你欄商品資料回應:', data);
 
             let productDataArray = null;
 
@@ -1192,7 +1192,7 @@ class InfMarketingPopupComponent extends HTMLElement {
                 
                 // 4. 從新數據中隨機選取一個商品並返回
                 const selectedProduct = this.selectRandomProduct(productDataArray, 'minibar');
-                console.log('[Minibar] API 數據已緩存並選取商品');
+                // console.log('[Minibar] API 數據已緩存並選取商品');
                 return selectedProduct;
             } else {
                 throw new Error('處理後沒有可用的商品資料');
@@ -1213,7 +1213,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             // 從緩存中隨機選取一個商品
             const selectedProduct = this.selectRandomProduct(cachedData, 'minibar_anim');
             if (selectedProduct) {
-                console.log('[MinibarAnim] 使用緩存數據');
+                // console.log('[MinibarAnim] 使用緩存數據');
                 return selectedProduct;
             }
         }
@@ -1227,7 +1227,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             recom_num: "12",
             SP_PID: "xx"
         };
-        console.log('[MinibarAnim] 動畫迷你欄商品資料請求:', requestData);
+        // console.log('[MinibarAnim] 動畫迷你欄商品資料請求:', requestData);
 
         try {
             const options = {
@@ -1238,7 +1238,7 @@ class InfMarketingPopupComponent extends HTMLElement {
 
             const response = await fetch('https://eclm50mys1.execute-api.ap-northeast-1.amazonaws.com/v0/extension/recom_product', options);
             const data = await response.json();
-            console.log('[MinibarAnim] 動畫迷你欄商品資料回應:', data);
+            // console.log('[MinibarAnim] 動畫迷你欄商品資料回應:', data);
 
             // 處理 sp_trans 數據
             let jsonData_trans = data['sp_trans'].map((item) => this.processMinibarAnimProduct(item));
@@ -1249,7 +1249,7 @@ class InfMarketingPopupComponent extends HTMLElement {
                 
                 // 4. 從新數據中隨機選取一個商品並返回
                 const selectedProduct = this.selectRandomProduct(jsonData_trans, 'minibar_anim');
-                console.log('[MinibarAnim] API 數據已緩存並選取商品');
+                // console.log('[MinibarAnim] API 數據已緩存並選取商品');
                 return selectedProduct;
             } else {
                 throw new Error('沒有可用的商品資料');
@@ -1425,7 +1425,7 @@ class InfMarketingPopupComponent extends HTMLElement {
     show() {
         // 檢查今日是否已設定不再顯示
         if (!this.shouldShowToday()) {
-            console.log('今日已設定不再顯示彈窗，跳過顯示');
+            // console.log('今日已設定不再顯示彈窗，跳過顯示');
             return;
         }
         
@@ -1496,7 +1496,7 @@ class InfMarketingPopupComponent extends HTMLElement {
             }
 
             const config = await response.json();
-            console.log('品牌配置:', config);
+            // console.log('品牌配置:', config);
             return config;
         } catch (error) {
             console.error('獲取品牌配置失敗:', error);
@@ -1515,7 +1515,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         // 否則調用 API 獲取配置
         const config = await this.getBrandConfig();
         if (!config) {
-            console.log('無法獲取品牌配置，使用預設設置');
+            // console.log('無法獲取品牌配置，使用預設設置');
             return;
         }
 
@@ -1543,7 +1543,7 @@ class InfMarketingPopupComponent extends HTMLElement {
         }
         
         if (!moduleConfig) {
-            console.log(`未找到 ${this.popupType} 的有效配置`);
+            // console.log(`未找到 ${this.popupType} 的有效配置`);
             return;
         }
         
@@ -1584,7 +1584,7 @@ class InfMarketingPopupComponent extends HTMLElement {
     // 導出組件類別供外部使用
     window.InfMarketingPopupComponent = InfMarketingPopupComponent;
 } else {
-    console.log('[組件] inf-marketing-popup-component 已註冊，跳過重複註冊');
+    // console.log('[組件] inf-marketing-popup-component 已註冊，跳過重複註冊');
 }
 
 // 便捷的腳本創建方法
@@ -1647,12 +1647,12 @@ window.createInfMarketingPopup = function(options = {}) {
         // 設置 minibar 彈窗的配置屬性
         popupElement.setAttribute('minibar-description', minibarDescription);
         popupElement.setAttribute('minibar-cta-color', minibarCtaColor);
-        console.log('設置 minibar 類型彈窗');
+        // console.log('設置 minibar 類型彈窗');
     } else if (type === 'minibar_anim') {
         // 設置 minibar_anim 彈窗的配置屬性
         popupElement.setAttribute('minibar-anim-description', minibarAnimDescription);
         popupElement.setAttribute('minibar-anim-cta-color', minibarAnimCtaColor);
-        console.log('設置 minibar_anim 類型彈窗');
+        // console.log('設置 minibar_anim 類型彈窗');
     }
     
     // 手動觸發初始化，確保類型已設置
@@ -1948,7 +1948,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
             //     }
             // ];
             
-            console.log('使用開發測試資料:', options.configArray);
+            // console.log('使用開發測試資料:', options.configArray);
             processConfigArray(options.configArray);
         } else {
             // 調用 API 獲取品牌配置
@@ -1967,13 +1967,13 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                 return response.json();
             })
             .then(configArray => {
-                console.log('品牌配置:', configArray);
+                // console.log('品牌配置:', configArray);
                 processConfigArray(configArray);
             })
             .catch(error => {
                 console.error('獲取品牌配置失敗:', error);
                 // 如果 API 調用失敗，不顯示任何彈窗
-                console.log('API 調用失敗，不顯示任何彈窗');
+                // console.log('API 調用失敗，不顯示任何彈窗');
                 resolve([]);
             });
         }
@@ -2006,7 +2006,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                 }
                 
                 const isValid = today >= startDateStr && today <= endDateStr;
-                console.log(`日期檢查: 今天(${today}) >= 起始日(${startDateStr}) && 今天(${today}) <= 結束日(${endDateStr}) = ${isValid}`);
+                // console.log(`日期檢查: 今天(${today}) >= 起始日(${startDateStr}) && 今天(${today}) <= 結束日(${endDateStr}) = ${isValid}`);
                 
                 return isValid;
             }
@@ -2136,7 +2136,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     return false;
                 });
                 
-                console.log(`DisplayList 檢查: 當前頁面類型(${currentPageType}), 當前 URL(${currentUrl}), DisplayList(${JSON.stringify(displayList)}), 是否允許(${isAllowed})`);
+                // console.log(`DisplayList 檢查: 當前頁面類型(${currentPageType}), 當前 URL(${currentUrl}), DisplayList(${JSON.stringify(displayList)}), 是否允許(${isAllowed})`);
                 
                 return isAllowed;
             }
@@ -2151,9 +2151,9 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     
                     if (isStatusValid && isTimeValid && isDisplayListValid) {
                         discountConfig = sectionInfo;
-                        console.log('✓ 折扣彈窗配置有效');
+                        // console.log('✓ 折扣彈窗配置有效');
                     } else {
-                        console.log('✗ 折扣彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
+                        // console.log('✗ 折扣彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 } else if (config.Module === 'Popup_SocialProof_Info_Widget' && config.ConfigData?.Section_Info?.[0]) {
                     const sectionInfo = config.ConfigData.Section_Info[0];
@@ -2163,9 +2163,9 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     
                     if (isStatusValid && isTimeValid && isDisplayListValid) {
                         minibarConfig = sectionInfo;
-                        console.log('✓ 迷你欄彈窗配置有效');
+                        // console.log('✓ 迷你欄彈窗配置有效');
                     } else {
-                        console.log('✗ 迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
+                        // console.log('✗ 迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 } else if (config.Module === 'Popup_SocialProof_Recommend_Widget' && config.ConfigData?.Section_Info?.[0]) {
                     const sectionInfo = config.ConfigData.Section_Info[0];
@@ -2175,18 +2175,18 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     
                     if (isStatusValid && isTimeValid && isDisplayListValid) {
                         minibarAnimConfig = sectionInfo;
-                        console.log('✓ 動畫迷你欄彈窗配置有效');
+                        // console.log('✓ 動畫迷你欄彈窗配置有效');
                     } else {
-                        console.log('✗ 動畫迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
+                        // console.log('✗ 動畫迷你欄彈窗配置無效 - status:', isStatusValid, 'TimeValid:', isTimeValid, 'DisplayList:', isDisplayListValid);
                     }
                 }
             });
             
-            console.log('最終配置結果:', {
-                discountConfig: !!discountConfig,
-                minibarConfig: !!minibarConfig,
-                minibarAnimConfig: !!minibarAnimConfig
-            });
+            // console.log('最終配置結果:', {
+            //     discountConfig: !!discountConfig,
+            //     minibarConfig: !!minibarConfig,
+            //     minibarAnimConfig: !!minibarAnimConfig
+            // });
             
             // 創建折扣彈窗 (Popup_Coupon_Widget)
             if (discountConfig) {
@@ -2205,7 +2205,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     ...options
                 });
                 popups.push(discountPopup);
-                console.log('創建折扣彈窗 (Popup_Coupon_Widget)');
+                // console.log('創建折扣彈窗 (Popup_Coupon_Widget)');
             }
             
             // 創建迷你欄彈窗 (Popup_SocialProof_Info_Widget)
@@ -2220,7 +2220,7 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     ...options
                 });
                 popups.push(minibarPopup);
-                console.log('創建迷你欄彈窗 (Popup_SocialProof_Info_Widget)');
+                // console.log('創建迷你欄彈窗 (Popup_SocialProof_Info_Widget)');
             }
             
             // 創建動畫迷你欄彈窗 (Popup_SocialProof_Recommend_Widget)
@@ -2235,12 +2235,12 @@ window.createInfMarketingPopupByBrand = function(brand, options = {}) {
                     ...options
                 });
                 popups.push(minibarAnimPopup);
-                console.log('創建動畫迷你欄彈窗 (Popup_SocialProof_Recommend_Widget)');
+                // console.log('創建動畫迷你欄彈窗 (Popup_SocialProof_Recommend_Widget)');
             }
             
             // 如果沒有配置任何彈窗，不顯示任何彈窗
             if (popups.length === 0) {
-                console.log('未找到有效的品牌配置，不顯示任何彈窗');
+                // console.log('未找到有效的品牌配置，不顯示任何彈窗');
             }
             
             resolve(popups);
@@ -2274,5 +2274,5 @@ window.createMinibarAnimPopup = function(options = {}) {
 window.clearPopupCache = function() {
     const cacheManager = new window.PopupCacheManager();
     cacheManager.clearAllCache();
-    console.log('[工具] 已清除所有彈窗緩存');
+    // console.log('[工具] 已清除所有彈窗緩存');/
 };
